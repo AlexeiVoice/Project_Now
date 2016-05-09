@@ -1,0 +1,61 @@
+
+chars.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+walkj_frame
+  rotate: false
+  xy: 1, 1
+  size: 128, 120
+  orig: 128, 128
+  offset: 0, 8
+  index: 6
+walkg_frame
+  rotate: false
+  xy: 1, 1
+  size: 128, 120
+  orig: 128, 128
+  offset: 0, 8
+  index: 4
+walko_frame
+  rotate: false
+  xy: 131, 1
+  size: 128, 120
+  orig: 128, 128
+  offset: 0, 8
+  index: 2
+walkz_frame
+  rotate: false
+  xy: 131, 1
+  size: 128, 120
+  orig: 128, 128
+  offset: 0, 8
+  index: 8
+walkq_frame
+  rotate: false
+  xy: 261, 2
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 5
+walkn_frame
+  rotate: false
+  xy: 391, 2
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 1
+walka_frame
+  rotate: false
+  xy: 521, 2
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 7
+walkh_frame
+  rotate: false
+  xy: 521, 2
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 3

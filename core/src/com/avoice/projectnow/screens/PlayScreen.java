@@ -15,12 +15,15 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class PlayScreen implements Screen {
+public class PlayScreen implements Screen, InputProcessor {
     private TextureAtlas atlas;
 
     private World world;
@@ -32,6 +35,7 @@ public class PlayScreen implements Screen {
 
     private PlayerCharacter player;
     private MGame game;
+    private Box2DDebugRenderer b2dr;//DEBUG
 
     private B2worldCreator worldCreator;
 
@@ -47,7 +51,7 @@ public class PlayScreen implements Screen {
         gameCam = new OrthographicCamera();
         viewport = new FitViewport(MGame.V_WIDTH / MGame.PPM,
                 MGame.V_HEIGHT / MGame.PPM, gameCam);
-
+        gameCam.zoom = 1.5f;
 
         mapLoader = new TmxMapLoader();
         map = mapLoader.load("Project_Now_test.tmx");
@@ -60,20 +64,21 @@ public class PlayScreen implements Screen {
 
         worldCreator = new B2worldCreator(this);
 
+        b2dr = new Box2DDebugRenderer();//DEBUG
     }
 
     public void handleInput(float delta) {
         if(player.getCurrentState() != PlayerCharacter.State.DEAD) {
-            if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if(Gdx.input.isKeyJustPressed(Keys.SPACE)) {
                 player.getB2dBody().applyLinearImpulse(new Vector2(0, 4f), player.getB2dBody().getWorldCenter(),
                         true);
             }
-            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.getB2dBody().getLinearVelocity().x <= 2) {
-                player.getB2dBody().applyLinearImpulse(new Vector2(0.1f, 0), player.getB2dBody().getWorldCenter(),
+            if(Gdx.input.isKeyPressed(Keys.RIGHT) && player.getB2dBody().getLinearVelocity().x <= 2) {
+                player.getB2dBody().applyLinearImpulse(new Vector2(0.2f, 0), player.getB2dBody().getWorldCenter(),
                         true);
             }
-            if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.getB2dBody().getLinearVelocity().x >= -2) {
-                player.getB2dBody().applyLinearImpulse(new Vector2(-0.1f, 0), player.getB2dBody().getWorldCenter(),
+            if(Gdx.input.isKeyPressed(Keys.LEFT) && player.getB2dBody().getLinearVelocity().x >= -2) {
+                player.getB2dBody().applyLinearImpulse(new Vector2(-0.2f, 0), player.getB2dBody().getWorldCenter(),
                         true);
             }
         }
@@ -106,6 +111,10 @@ public class PlayScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         update(delta);
         renderer.render();
+
+        //DEBUG
+        //b2dr.render(world, gameCam.combined);
+
         game.getBatch().setProjectionMatrix(gameCam.combined);
         game.getBatch().begin();
         player.draw(game.getBatch());
@@ -139,6 +148,53 @@ public class PlayScreen implements Screen {
         renderer.dispose();
         world.dispose();
 
+    }
+    //endregion
+    //region Input methods
+    @Override
+    public boolean keyDown(int keycode) {
+        if(keycode == Keys.UP) {
+            player.attack();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        if(keycode == Keys.UP) {
+            player.stopAttack();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
     }
     //endregion
 

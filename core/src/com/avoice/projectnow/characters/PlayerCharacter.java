@@ -6,6 +6,7 @@ import com.avoice.projectnow.screens.PlayScreen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -26,10 +27,12 @@ public class PlayerCharacter extends Sprite{
 
     private TextureRegion standTexture;
     private Animation runAnimation;
-    private TextureRegion jumpTexture;
+    private Animation jumpAnimation;
+    private Animation attackAnimation;
 
     private boolean runningRight;
     private boolean isDead;
+    private boolean isAttacking;
 
     public PlayerCharacter(PlayScreen screen) {
         //set texture to sprite:
@@ -40,29 +43,36 @@ public class PlayerCharacter extends Sprite{
         runningRight = true;
         isDead = false;
 
-        Array<TextureRegion> animFrames = new Array<TextureRegion>();
+        Array<TextureRegion> animFrames;
         //set run animation:
-        /*for (int i = 1; i < 6; i++) {
-            animFrames.add(new TextureRegion(screen.getAtlas().findRegion("walk_frame", i)));
-        }*/
-        runAnimation = new Animation(.15f, screen.getAtlas().getRegions());
+        animFrames = getFramesFromAtlas(screen.getAtlas(), "walk_frame", 8);
+        runAnimation = new Animation(.15f, animFrames);
+        animFrames.clear();
+        //set jump animation
+        animFrames = getFramesFromAtlas(screen.getAtlas(), "jump_frame", 3);
+        jumpAnimation = new Animation(.2f, animFrames);
+        animFrames.clear();
+        //set attack animation
+        animFrames = getFramesFromAtlas(screen.getAtlas(), "attack_frame", 4);
+        attackAnimation = new Animation(.1f, animFrames);
         animFrames.clear();
 
-        standTexture = new TextureRegion(screen.getAtlas().findRegion("walkj_frame"));
+        standTexture = new TextureRegion(screen.getAtlas().findRegion("walk_frame", 1));
         setBounds(0, 0, 128 / MGame.PPM, 128 / MGame.PPM);
         setRegion(standTexture);
         initPlayer();
+
     }
 
     public void initPlayer() {
         BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(128 / MGame.PPM, 128 / MGame.PPM );
+        bodyDef.position.set(128 / MGame.PPM, 17 * 128 / MGame.PPM );
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         b2dBody = world.createBody(bodyDef);
 
         FixtureDef fixtureDef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(50 / MGame.PPM);
+        shape.setRadius(60 / MGame.PPM);
         fixtureDef.shape = shape;
         fixtureDef.friction = 1f;
         b2dBody.createFixture(fixtureDef);
@@ -76,27 +86,30 @@ public class PlayerCharacter extends Sprite{
 
     public TextureRegion getFrame(float delta) {
         currentState = getState();
-        TextureRegion region = null;
+        TextureRegion region;
         switch (currentState) {
             case DEAD:
                 region = standTexture;
                 break;
             case JUMPING:
-                region = standTexture;
+                region = isAttacking ? attackAnimation.getKeyFrame(stateTimer, false) :
+                        jumpAnimation.getKeyFrame(stateTimer, false);
                 break;
             case RUNNING:
-                region = runAnimation.getKeyFrame(stateTimer, true);
+                region = isAttacking ? attackAnimation.getKeyFrame(stateTimer, false) :
+                        runAnimation.getKeyFrame(stateTimer, true);
                 break;
             case FALLING:
             case STANDING:
             default:
-                region = standTexture;
+                region = isAttacking ? attackAnimation.getKeyFrame(stateTimer, true) : standTexture;
+
                 break;
         }
-        if ((b2dBody.getLinearVelocity().x < 0 || !runningRight) && !region.isFlipX()) {
+        if((b2dBody.getLinearVelocity().x < 0 || !runningRight) && !region.isFlipX()) {
             region.flip(true, false);
-            runningRight = true;
-        } else if((b2dBody.getLinearVelocity().x > 0 || runningRight) && region.isFlipX()) {
+            runningRight = false;
+        }else if((b2dBody.getLinearVelocity().x > 0 || runningRight) && region.isFlipX()) {
             region.flip(true, false);
             runningRight = true;
         }
@@ -130,4 +143,18 @@ public class PlayerCharacter extends Sprite{
         return currentState;
     }
 
+    public Array<TextureRegion> getFramesFromAtlas(TextureAtlas atlas, String regionName, int count) {
+        Array<TextureRegion> frames = new Array<TextureRegion>();
+        for (int i = 1; i < count+1; i++) {
+            frames.add(new TextureRegion(atlas.findRegion(regionName, i)));
+        }
+        return frames;
+    }
+
+    public void attack() {
+        isAttacking = true;
+    }
+    public void stopAttack() {
+        isAttacking = false;
+    }
 }

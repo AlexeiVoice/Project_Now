@@ -9,8 +9,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MGame extends Game {
-	public static final int V_WIDTH = 800;
-	public static final int V_HEIGHT = 400;
+	public static final int V_WIDTH = 1280;
+	public static final int V_HEIGHT = 720;
 	public static final float PPM = 200;//pixels per meter
 
 	public SpriteBatch getBatch() {
@@ -24,6 +24,7 @@ public class MGame extends Game {
 		PlayScreen playScreen = new PlayScreen(this);
 		batch = new SpriteBatch();
 		setScreen(playScreen);
+		Gdx.input.setInputProcessor(playScreen);
 	}
 
 	@Override

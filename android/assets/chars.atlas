@@ -3,59 +3,108 @@ chars.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-walkj_frame
+walk_frame
   rotate: false
-  xy: 1, 1
+  xy: 1, 123
   size: 128, 120
   orig: 128, 128
   offset: 0, 8
   index: 6
-walkg_frame
+walk_frame
+  rotate: false
+  xy: 1, 123
+  size: 128, 120
+  orig: 128, 128
+  offset: 0, 8
+  index: 4
+walk_frame
   rotate: false
   xy: 1, 1
   size: 128, 120
   orig: 128, 128
   offset: 0, 8
-  index: 4
-walko_frame
+  index: 8
+walk_frame
   rotate: false
-  xy: 131, 1
+  xy: 1, 1
   size: 128, 120
   orig: 128, 128
   offset: 0, 8
   index: 2
-walkz_frame
+walk_frame
   rotate: false
-  xy: 131, 1
-  size: 128, 120
-  orig: 128, 128
-  offset: 0, 8
-  index: 8
-walkq_frame
-  rotate: false
-  xy: 261, 2
-  size: 128, 119
-  orig: 128, 128
-  offset: 0, 9
-  index: 5
-walkn_frame
-  rotate: false
-  xy: 391, 2
+  xy: 131, 124
   size: 128, 119
   orig: 128, 128
   offset: 0, 9
   index: 1
-walka_frame
+attack_frame
   rotate: false
-  xy: 521, 2
+  xy: 131, 124
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 1
+jump_frame
+  rotate: false
+  xy: 131, 124
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 1
+walk_frame
+  rotate: false
+  xy: 131, 3
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 5
+walk_frame
+  rotate: false
+  xy: 261, 124
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 3
+walk_frame
+  rotate: false
+  xy: 261, 124
   size: 128, 119
   orig: 128, 128
   offset: 0, 9
   index: 7
-walkh_frame
+attack_frame
   rotate: false
-  xy: 521, 2
+  xy: 261, 3
   size: 128, 119
   orig: 128, 128
   offset: 0, 9
+  index: 2
+attack_frame
+  rotate: false
+  xy: 391, 124
+  size: 128, 119
+  orig: 128, 128
+  offset: 0, 9
+  index: 3
+attack_frame
+  rotate: false
+  xy: 391, 4
+  size: 128, 118
+  orig: 128, 128
+  offset: 0, 9
+  index: 4
+jump_frame
+  rotate: false
+  xy: 521, 128
+  size: 128, 115
+  orig: 128, 128
+  offset: 0, 13
+  index: 2
+jump_frame
+  rotate: false
+  xy: 521, 17
+  size: 128, 109
+  orig: 128, 128
+  offset: 0, 19
   index: 3

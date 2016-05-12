@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
@@ -66,7 +67,7 @@ public class PlayerCharacter extends Sprite{
 
     public void initPlayer() {
         BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(128 / MGame.PPM, 17 * 128 / MGame.PPM );
+        bodyDef.position.set(3.2f, 17 * 128 / MGame.PPM );
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         b2dBody = world.createBody(bodyDef);
 
@@ -156,5 +157,20 @@ public class PlayerCharacter extends Sprite{
     }
     public void stopAttack() {
         isAttacking = false;
+    }
+
+    public void makeStepLeft() {
+        b2dBody.applyLinearImpulse(new Vector2(-1f, 0), b2dBody.getWorldCenter(),
+                true);
+    }
+
+    public void makeStepRight() {
+        b2dBody.applyLinearImpulse(new Vector2(1, 0), b2dBody.getWorldCenter(),
+                true);
+    }
+
+    public void jump() {
+        b2dBody.applyLinearImpulse(new Vector2(0, 4f), b2dBody.getWorldCenter(),
+                true);
     }
 }

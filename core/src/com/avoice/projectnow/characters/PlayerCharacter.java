@@ -3,21 +3,26 @@ package com.avoice.projectnow.characters;
 
 import com.avoice.projectnow.MGame;
 import com.avoice.projectnow.screens.PlayScreen;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 
-public class PlayerCharacter extends Sprite{
+public class PlayerCharacter extends Sprite implements Disposable{
+
     public enum State{ STANDING, RUNNING, JUMPING, FALLING, DEAD}
     private State currentState;
     private State previousState;
@@ -34,6 +39,13 @@ public class PlayerCharacter extends Sprite{
     private boolean runningRight;
     private boolean isDead;
     private boolean isAttacking;
+
+    private final float SPEED = .3f;
+    private final float JUMPSPEED = 6f;
+    private final float MAXSPEED = 3f;
+
+    private ParticleEffect jumpDustEffect;
+    private boolean drawDustEffect;
 
     public PlayerCharacter(PlayScreen screen) {
         //set texture to sprite:
@@ -59,15 +71,21 @@ public class PlayerCharacter extends Sprite{
         animFrames.clear();
 
         standTexture = new TextureRegion(screen.getAtlas().findRegion("walk_frame", 1));
-        setBounds(0, 0, 128 / MGame.PPM, 128 / MGame.PPM);
+        setBounds(0, 0, MGame.TILESIZE / MGame.PPM, MGame.TILESIZE / MGame.PPM);
         setRegion(standTexture);
         initPlayer();
 
+        //init effects
+        jumpDustEffect = new ParticleEffect();
+        jumpDustEffect.load(Gdx.files.internal("jump_dust.p"), Gdx.files.internal("."));
+        drawDustEffect = false;
+        jumpDustEffect.scaleEffect(1/MGame.PPM);
+        jumpDustEffect.setDuration(5);
     }
 
     public void initPlayer() {
         BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(3.2f, 17 * 128 / MGame.PPM );
+        bodyDef.position.set(MGame.TILESIZE / MGame.PPM, 17 * MGame.TILESIZE / MGame.PPM );
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         b2dBody = world.createBody(bodyDef);
 
@@ -76,15 +94,43 @@ public class PlayerCharacter extends Sprite{
         shape.setRadius(60 / MGame.PPM);
         fixtureDef.shape = shape;
         fixtureDef.friction = 1f;
-        b2dBody.createFixture(fixtureDef);
+        fixtureDef.restitution = .15f;
+        fixtureDef.filter.categoryBits = MGame.PLAYER_BIT;
+        fixtureDef.filter.maskBits = MGame.GROUND_BIT;
+        b2dBody.createFixture(fixtureDef).setUserData(this);
+
+        /*now let's create sensor-fixture for feet*/
+        EdgeShape feet = new EdgeShape();
+        feet.set(new Vector2(-30/MGame.PPM, -70/MGame.PPM),
+                new Vector2(30/MGame.PPM, -70/MGame.PPM));
+        fixtureDef.shape = feet;
+        fixtureDef.filter.categoryBits = MGame.PLAYER_FEET_BIT;
+        fixtureDef.filter.maskBits = MGame.GROUND_BIT;
+        fixtureDef.isSensor = false;
+        b2dBody.createFixture(fixtureDef).setUserData(this);
+
     }
 
     public void update(float delta) {
         setPosition(b2dBody.getPosition().x - getWidth() / 2, b2dBody.getPosition().y
                 - getHeight() / 2);
         setRegion(getFrame(delta));
+
+        if(drawDustEffect && jumpDustEffect.isComplete()) {
+            drawDustEffect = false;
+        }
     }
 
+    public void render(SpriteBatch batch, float delta) {
+        super.draw(batch);
+
+        if(drawDustEffect) {
+            jumpDustEffect.setPosition(getBodyXPos(), getY());
+            jumpDustEffect.draw(batch, delta);
+        }
+    }
+
+    //region GETTERS and SETTERS
     public TextureRegion getFrame(float delta) {
         currentState = getState();
         TextureRegion region;
@@ -144,6 +190,10 @@ public class PlayerCharacter extends Sprite{
         return currentState;
     }
 
+    public State getPreviousState() {
+        return previousState;
+    }
+
     public Array<TextureRegion> getFramesFromAtlas(TextureAtlas atlas, String regionName, int count) {
         Array<TextureRegion> frames = new Array<TextureRegion>();
         for (int i = 1; i < count+1; i++) {
@@ -152,6 +202,20 @@ public class PlayerCharacter extends Sprite{
         return frames;
     }
 
+    public float getBodyXPos() {
+        return b2dBody.getPosition().x;
+    }
+    public float getBodyYPos() {
+        return b2dBody.getPosition().y;
+    }
+
+    public void setDrawDustEffect(boolean drawDustEffect) {
+        this.drawDustEffect = drawDustEffect;
+        jumpDustEffect.start();
+    }
+    //endregion
+
+    //region PHYSICAL ACTIONS
     public void attack() {
         isAttacking = true;
     }
@@ -160,17 +224,30 @@ public class PlayerCharacter extends Sprite{
     }
 
     public void makeStepLeft() {
-        b2dBody.applyLinearImpulse(new Vector2(-1f, 0), b2dBody.getWorldCenter(),
-                true);
+        //Will accelerate till reaches maxpeed
+        if(b2dBody.getLinearVelocity().x >= -MAXSPEED) {
+            b2dBody.applyLinearImpulse(new Vector2(-SPEED, 0), b2dBody.getWorldCenter(),
+                    true);
+        }
     }
 
     public void makeStepRight() {
-        b2dBody.applyLinearImpulse(new Vector2(1, 0), b2dBody.getWorldCenter(),
-                true);
+        //Will accelerate till reaches maxpeed
+        if(b2dBody.getLinearVelocity().x <= MAXSPEED) {
+            b2dBody.applyLinearImpulse(new Vector2(SPEED, 0), b2dBody.getWorldCenter(),
+                    true);
+        }
     }
 
     public void jump() {
-        b2dBody.applyLinearImpulse(new Vector2(0, 4f), b2dBody.getWorldCenter(),
+        b2dBody.applyLinearImpulse(new Vector2(0, JUMPSPEED), b2dBody.getWorldCenter(),
                 true);
+        //dust effect related things
+    }
+    //endregion
+
+    @Override
+    public void dispose() {
+        jumpDustEffect.dispose();
     }
 }

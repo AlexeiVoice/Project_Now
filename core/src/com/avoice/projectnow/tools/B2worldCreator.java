@@ -1,7 +1,6 @@
 package com.avoice.projectnow.tools;
 
 import com.avoice.projectnow.MGame;
-import com.avoice.projectnow.screens.PlayScreen;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -38,9 +37,12 @@ public class B2worldCreator {
             shape.setAsBox((rect.getWidth() / 2) / MGame.PPM,
                     (rect.getHeight() / 2) / MGame.PPM);
             fixtureDef.shape = shape;
+            fixtureDef.filter.categoryBits = MGame.GROUND_BIT;
+            fixtureDef.filter.maskBits = MGame.PLAYER_BIT| MGame.PLAYER_FEET_BIT;
             body.createFixture(fixtureDef);
         }
-        PolylineMapObject polylineObject = (PolylineMapObject)map.getLayers().get(2).getObjects().
+        //create world bounds
+        PolylineMapObject polylineObject = (PolylineMapObject)map.getLayers().get("GroundLayer").getObjects().
                 get("worldBounds");
         ChainShape chainShape = getPolyline(polylineObject);
         bdef.type = BodyDef.BodyType.StaticBody;
@@ -49,10 +51,12 @@ public class B2worldCreator {
         body = world.createBody(bdef);
 
         fixtureDef.shape = chainShape;
+        fixtureDef.filter.categoryBits = MGame.GROUND_BIT;
+        fixtureDef.filter.maskBits = MGame.PLAYER_BIT | MGame.PLAYER_FEET_BIT;
         body.createFixture(chainShape, 1);
 
-        shape.dispose();
         chainShape.dispose();
+        shape.dispose();
     }
 
     private ChainShape getPolyline(PolylineMapObject polylineObject) {
